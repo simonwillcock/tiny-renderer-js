@@ -12,7 +12,5 @@ html {
 
 #screen {
     border: 1px solid #d0d0d0;
-    width: 150px;
-    height: 150px;
-    background: #fff;
+    background: #000;
 }
