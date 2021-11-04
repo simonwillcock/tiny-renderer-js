@@ -1,0 +1,17 @@
+{
+  "name": "tiny-renderer-js",
+  "version": "1.0.0",
+  "description": "A tiny renderer in a short amount of code",
+  "main": "index.js",
+  "author": "Simon Willcock <swillcock@atlassian.com>",
+  "license": "MIT",
+  "private": true,
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0"
+  }
+}
