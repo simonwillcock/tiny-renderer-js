@@ -1,3 +1,5 @@
+import { COLOURS } from './constants';
+
 interface Coordinates {
   x: number
   y: number
@@ -31,6 +33,16 @@ const drawingFactory: DrawingFactory = (width, height, canvasData) => (coords, r
   });
 }
 
+const line = (pen: DrawingFunction, x0: number, y0: number, x1: number, y1: number, color: RGBA) => {
+  for (let t = 0; t < 1.0; t += 0.01) {
+    // Need to round values because we are dealing with whole pixel indices
+    const x = Math.round(x0 + (x1 - x0) * t);
+    const y = Math.round(x0 + (y1 - y0) * t);
+    console.log(x, y);
+    pen({x, y}, color);
+  }
+}
+
 const renderer = (selector: string) => {
   const canvas = document.querySelector(selector) as HTMLCanvasElement;
   const { width, height } = canvas;
@@ -40,10 +52,10 @@ const renderer = (selector: string) => {
   let canvasData = ctx.createImageData(canvas.width, canvas.height);
 
   // Create drawing function
-  const drawPixel = drawingFactory(width, height, canvasData);
+  const pen = drawingFactory(width, height, canvasData);
 
   // Do drawing - simple for now
-  drawPixel({x: 52, y: 41}, {r: 255, g: 0, b: 0, a: 255});
+  line(pen, 13, 20, 80, 40, COLOURS.WHITE)
 
   // Update the canvas with the new data
   ctx.putImageData(canvasData, 0, 0)
