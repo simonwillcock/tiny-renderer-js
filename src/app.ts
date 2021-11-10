@@ -20,26 +20,42 @@ const drawingFactory: DrawingFactory = (width, height, canvasData) => (coords, r
   // organized left to right, top to bottom, with each pixel represented 
   // as four values in RGBA order.
   
-  // We will be passing in coordinates assuming the origin is at the bottom left,
-  // so we need to translate them accordingly
   const { x, y } = coords;
-  const translatedY = Math.abs(height - y);
 
-  const pixelIndex = (translatedY * width + x) * 4;
+  const translatedY = Math.abs(height - Math.floor(y));
+  const index = translatedY * (width * 4) + Math.floor(x) * 4
 
   // Set RGBA values as each component of the pixel
   Object.values(rgba).forEach((value: number, offset) => {
-    canvasData.data[pixelIndex + offset] = value;
+    canvasData.data[index + offset] = value;
   });
 }
 
 const line = (pen: DrawingFunction, x0: number, y0: number, x1: number, y1: number, color: RGBA) => {
-  for (let t = 0; t < 1.0; t += 0.01) {
-    // Need to round values because we are dealing with whole pixel indices
-    const x = Math.round(x0 + (x1 - x0) * t);
-    const y = Math.round(x0 + (y1 - y0) * t);
-    console.log(x, y);
-    pen({x, y}, color);
+  let steep = false;
+
+  if (Math.abs(x0 - x1) < Math.abs(y0 - y1)) {
+    steep = true;
+    [x0, y0] = [y0, x0];
+    [x1, y1] = [y1, x1];
+  }
+
+  if (x0 > x1) {
+    [x0, x1] = [x1, x0];
+    [y0, y1] = [y1, y0];
+  }
+
+  for (let x = x0; x <= x1; x++) {
+
+    const t = (x - x0) / (x1 - x0);
+    const y = y0 * (1 - t) + y1 * t;
+
+    if (steep) {
+      // De-transpose
+      pen({x: y, y: x}, color);
+    } else {
+      pen({x, y}, color);
+    }
   }
 }
 
@@ -55,7 +71,9 @@ const renderer = (selector: string) => {
   const pen = drawingFactory(width, height, canvasData);
 
   // Do drawing - simple for now
-  line(pen, 13, 20, 80, 40, COLOURS.WHITE)
+  line(pen, 13, 20, 80, 40, COLOURS.WHITE);
+  line(pen, 20, 13, 40, 80, COLOURS.RED);
+  line(pen, 80, 40, 13, 20, COLOURS.RED);
 
   // Update the canvas with the new data
   ctx.putImageData(canvasData, 0, 0)
