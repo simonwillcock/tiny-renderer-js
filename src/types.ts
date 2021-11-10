@@ -12,3 +12,9 @@ export interface RGBA {
 
 export type DrawingFunction = (coords: Coordinates, rgba: RGBA) => void
 export type DrawingFactory = (width: number, height: number, canvasData: ImageData) => DrawingFunction;
+
+export interface Vertex {
+  x: number
+  y: number
+  z: number
+};
