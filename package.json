@@ -2,7 +2,6 @@
   "name": "tiny-renderer-js",
   "version": "1.0.0",
   "description": "A tiny renderer in a short amount of code",
-  "main": "index.js",
   "author": "Simon Willcock <swillcock@atlassian.com>",
   "license": "MIT",
   "private": true,
