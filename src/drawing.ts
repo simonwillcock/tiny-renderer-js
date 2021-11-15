@@ -1,25 +1,32 @@
 import { COLOURS } from "./constants";
-import { Vec2 } from './geometry';
+import { Vec2, Vec3 } from "./geometry";
 import { DrawingFactory, DrawingFunction, RGBA } from "./types";
 
 export const drawingFactory: DrawingFactory =
   (width, height, canvasData) => (coords, rgba) => {
-  // Canvas data is an array with one value for each component in a pixel,
-  // organized left to right, top to bottom, with each pixel represented
-  // as four values in RGBA order.
+    // Canvas data is an array with one value for each component in a pixel,
+    // organized left to right, top to bottom, with each pixel represented
+    // as four values in RGBA order.
 
-  const { x, y } = coords;
+    const { x, y } = coords;
 
-  const translatedY = Math.abs(height - Math.floor(y));
-  const index = translatedY * (width * 4) + Math.floor(x) * 4;
+    const translatedY = Math.abs(height - Math.floor(y));
+    const index = translatedY * (width * 4) + Math.floor(x) * 4;
 
-  // Set RGBA values as each component of the pixel
-  Object.values(rgba).forEach((value: number, offset) => {
-    canvasData.data[index + offset] = value;
-  });
-};
+    // Set RGBA values as each component of the pixel
+    Object.values(rgba).forEach((value: number, offset) => {
+      canvasData.data[index + offset] = value;
+    });
+  };
 
-export const line = (pen: DrawingFunction, x0: number, y0: number, x1: number, y1: number, color: RGBA) => {
+export const line = (
+  pen: DrawingFunction,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  color: RGBA
+) => {
   let steep = false;
 
   if (Math.abs(x0 - x1) < Math.abs(y0 - y1)) {
@@ -38,58 +45,76 @@ export const line = (pen: DrawingFunction, x0: number, y0: number, x1: number, y
   const dx = x1 - x0;
   const dy = y1 - y0;
   const y_step = Math.abs(dy) * 2;
-  
+
   let y_error = 0;
   let y = y0;
 
   for (let x = x0; x <= x1; x++) {
     if (steep) {
-      pen({x: y, y: x}, color);
+      pen({ x: y, y: x }, color);
     } else {
-      pen({x, y}, color);
+      pen({ x, y }, color);
     }
     y_error += y_step;
     if (y_error > dx) {
-      y += (y1 > y0) ? 1 : -1;
+      y += y1 > y0 ? 1 : -1;
       y_error -= dx * 2;
     }
   }
 };
 
-export const vline = (pen: DrawingFunction, p0: Vec2, p1: Vec2, color: RGBA) => {
+export const vline = (
+  pen: DrawingFunction,
+  p0: Vec2,
+  p1: Vec2,
+  color: RGBA
+) => {
   line(pen, p0.x, p0.y, p1.x, p1.y, color);
 };
 
-export const triangle = (pen: DrawingFunction, t0: Vec2, t1: Vec2, t2: Vec2, color: RGBA) => {
-  if (t0.y === t1.y && t0.y === t2.y) return
-  // Sort in ascending order by y-coordinate
-  if (t0.y > t1.y) {
-    [t0, t1] = [t1, t0];
+export const barycentric = (points: Vec2[], P: Vec2) => {
+  const v0 = new Vec3(
+    points[2].x - points[0].x,
+    points[1].x - points[0].x,
+    points[0].x - P.x
+  );
+  const v1 = new Vec3(
+    points[2].y - points[0].y,
+    points[1].y - points[0].y,
+    points[0].y - P.y
+  );
+  const u = v0.crossProduct(v1);
+  if (Math.abs(u.z) < 1) {
+    // Bad triangle - return a vector outside of bounds (negative)
+    return new Vec3(-1, 1, 1);
   }
-  if (t0.y > t2.y) {
-    [t0, t2] = [t2, t0];
-  }
-  if (t1.y > t2.y) {
-    [t1, t2] = [t2, t1];
-  }
-  const totalHeight = t2.y - t0.y;
-  for (let i = 0; i < totalHeight; i++) {
-    const secondHalf = i > t1.y - t0.y || t1.y === t0.y;
-    const segmentHeight = secondHalf ? t2.y - t1.y : t1.y - t0.y;
-    const alpha = i / totalHeight;
-    const beta = (i - (secondHalf ? t1.y - t0.y : 0)) / segmentHeight;
-    let A = t0.clone().add(t2.clone().subtract(t0.clone()).multiply(alpha));
-    let B = secondHalf ? t1.clone().add(t2.clone().subtract(t1.clone()).multiply(beta)) : t0.clone().add(t1.clone().subtract(t0.clone()).multiply(beta));
-    if (A.x > B.x) {
-      [A, B] = [B, A];
-    }
+  return new Vec3(1 - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+};
 
-    for (let j = A.x; j < B.x; j++) {  
-      pen({x: j, y: t0.y + i}, color);
+export const triangle = (
+  pen: DrawingFunction,
+  width: number,
+  height: number,
+  points: Vec2[],
+  color: RGBA
+) => {
+  const bboxmin = new Vec2(width - 1, height - 1);
+  const bboxmax = new Vec2(0, 0);
+  const clamp = new Vec2(width - 1, height - 1);
+  for (let i = 0; i < 3; i++) {
+    ['x', 'y'].forEach(val => {
+      bboxmin[val] = Math.max(0, Math.min(bboxmin[val], points[i][val]));
+      bboxmax[val] = Math.min(clamp[val], Math.max(bboxmax[val], points[i][val]));
+    });
+  }
+  const P = new Vec2(0, 0);
+  for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+    for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+      const bcScreen = barycentric(points, P);
+      if (bcScreen.x < 0 || bcScreen.y < 0 || bcScreen.z < 0) {
+        continue;
+      }
+      pen({x: P.x, y: P.y}, color);
     }
   }
-
-  // vline(pen, t0, t1, COLOURS.GREEN);
-  // vline(pen, t1, t2, COLOURS.GREEN);
-  // vline(pen, t2, t0, COLOURS.RED);
 };

@@ -14,26 +14,14 @@ const renderer = (selector: string, btnSelector: string) => {
   let canvasData = ctx.createImageData(canvas.width, canvas.height);
 
   const t0 = [
-    new Vec2(10, 70),
-    new Vec2(50, 160),
-    new Vec2(70, 80),
-  ];
-  const t1 = [
-    new Vec2(180, 50),
-    new Vec2(150, 1),
-    new Vec2(70, 180),
-  ];
-  const t2 = [
-    new Vec2(180, 150),
-    new Vec2(120, 160),
-    new Vec2(130, 180),
+    new Vec2(10, 10),
+    new Vec2(100, 30),
+    new Vec2(190, 160),
   ];
 
   const pen = drawingFactory(width, height, canvasData);
   
-  triangle(pen, t0[0], t0[1], t0[2], COLOURS.RED);
-  triangle(pen, t1[0], t1[1], t1[2], COLOURS.WHITE);
-  triangle(pen, t2[0], t2[1], t2[2], COLOURS.GREEN);
+  triangle(pen, width, height, t0, COLOURS.RED);
 
   // Update the canvas with the new data
   ctx.putImageData(canvasData, 0, 0);
