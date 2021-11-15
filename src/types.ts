@@ -18,10 +18,3 @@ export interface Vertex {
   y: number
   z: number
 };
-
-type Vec2<T> =  {
-  x: T,
-  y: T,
-};
-
-export type Vec2i = Vec2<number>;

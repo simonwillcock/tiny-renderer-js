@@ -1,6 +1,7 @@
 import { african_head } from "./assets";
 import { COLOURS } from "./constants";
 import { drawingFactory, triangle } from "./drawing";
+import { Vec2 } from "./geometry";
 import { renderModel } from "./models";
 
 const renderer = (selector: string, btnSelector: string) => {
@@ -13,19 +14,19 @@ const renderer = (selector: string, btnSelector: string) => {
   let canvasData = ctx.createImageData(canvas.width, canvas.height);
 
   const t0 = [
-    { x: 10, y: 70 },
-    { x: 50, y: 160 },
-    { x: 70, y: 80 },
+    new Vec2(10, 70),
+    new Vec2(50, 160),
+    new Vec2(70, 80),
   ];
   const t1 = [
-    { x: 180, y: 50 },
-    { x: 150, y: 1 },
-    { x: 70, y: 180 },
+    new Vec2(180, 50),
+    new Vec2(150, 1),
+    new Vec2(70, 180),
   ];
   const t2 = [
-    { x: 180, y: 150 },
-    { x: 120, y: 160 },
-    { x: 130, y: 180 },
+    new Vec2(180, 150),
+    new Vec2(120, 160),
+    new Vec2(130, 180),
   ];
 
   const pen = drawingFactory(width, height, canvasData);
