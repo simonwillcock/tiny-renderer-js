@@ -13,15 +13,7 @@ const renderer = (selector: string, btnSelector: string) => {
   // Always start with a blank canvas
   let canvasData = ctx.createImageData(canvas.width, canvas.height);
 
-  const t0 = [
-    new Vec2(10, 10),
-    new Vec2(100, 30),
-    new Vec2(190, 160),
-  ];
-
-  const pen = drawingFactory(width, height, canvasData);
-  
-  triangle(pen, width, height, t0, COLOURS.RED);
+  renderModel(african_head, width, height, canvasData);
 
   // Update the canvas with the new data
   ctx.putImageData(canvasData, 0, 0);

@@ -18,3 +18,6 @@ export interface Vertex {
   y: number
   z: number
 };
+
+
+export type Face = number[];
