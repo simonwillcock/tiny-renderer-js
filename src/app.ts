@@ -1,7 +1,5 @@
 import { african_head } from "./assets";
-import { COLOURS } from "./constants";
-import { drawingFactory, triangle } from "./drawing";
-import { Vec2 } from "./geometry";
+import { Vec3 } from "./geometry";
 import { renderModel } from "./models";
 
 const renderer = (selector: string, btnSelector: string) => {
@@ -12,8 +10,9 @@ const renderer = (selector: string, btnSelector: string) => {
 
   // Always start with a blank canvas
   let canvasData = ctx.createImageData(canvas.width, canvas.height);
+  const lightDirection = new Vec3(0, 0, -1);
 
-  renderModel(african_head, width, height, canvasData);
+  renderModel(african_head, width, height, lightDirection, canvasData);
 
   // Update the canvas with the new data
   ctx.putImageData(canvasData, 0, 0);
@@ -25,7 +24,7 @@ const renderer = (selector: string, btnSelector: string) => {
     const contents = await file.text();
 
     let canvasData = ctx.createImageData(canvas.width, canvas.height);
-    renderModel(contents, width, height, canvasData);
+    renderModel(contents, width, height, lightDirection, canvasData);
 
     // Update the canvas with the new data
     ctx.putImageData(canvasData, 0, 0);

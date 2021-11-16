@@ -1,6 +1,6 @@
 import { COLOURS } from "./constants";
 import { drawingFactory, line, triangle } from "./drawing";
-import { Vec2 } from "./geometry";
+import { Vec2, Vec3 } from "./geometry";
 import { Face, Vertex } from "./types";
 import { randomColour } from "./utils";
 
@@ -44,6 +44,7 @@ export const renderModel = (
   text: string,
   width: number,
   height: number,
+  lightDirection: Vec3,
   canvasData: ImageData
 ) => {
   // Create drawing function
@@ -52,16 +53,23 @@ export const renderModel = (
   const { faces, vertices } = parseModel(text);
   // Loop through faces and draw each triangle
   faces.forEach((face) => {
-    const screenCoords = [];
+    const screenCoords: Vec2[] = [];
+    const worldCoords: Vec3[] = [];
     for (let i = 0; i < 3; i++) {
-      const worldCoords = vertices[face[i]];
+      const v = new Vec3(vertices[face[i]].x, vertices[face[i]].y, vertices[face[i]].z);
+      worldCoords.push(v);
       screenCoords.push(
         new Vec2(
-          (worldCoords.x + 1) * width / 2,
-          (worldCoords.y + 1) * height / 2
+          (v.x + 1) * width / 2,
+          (v.y + 1) * height / 2
         )
       );
     }
-    triangle(pen, width, height, screenCoords, randomColour());
+    const n0 = worldCoords[2].clone().subtract(worldCoords[0].clone());
+    const n1 = worldCoords[1].clone().subtract(worldCoords[0].clone());
+    const normal = n0.crossProduct(n1).normalize();
+    const intensity = normal.dotProduct(lightDirection);
+    
+    if (intensity > 0) triangle(pen, width, height, screenCoords, randomColour(intensity));
   });
 };

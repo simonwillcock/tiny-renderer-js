@@ -65,10 +65,16 @@ export class Vec3 {
   public y: number;
   public z: number;
 
-  constructor(x: number, y: number, z: number) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+  constructor(x: number | Vec3, y?: number, z?: number) {
+    if (typeof x === "number") {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    } else {
+      this.x = x.x;
+      this.y = x.y;
+      this.z = x.z;
+    }
     return this;
   }
 
@@ -115,6 +121,10 @@ export class Vec3 {
     return this;
   };
 
+  dotProduct = function (v: Vec3): number {
+    return this.x * v.x + this.y * v.y + this.z * v.z;
+  }
+
   length = function() {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
@@ -132,9 +142,22 @@ export class Vec3 {
     return this;
   }
 
-  normalize = function (): Vec3 {
-    return new Vec3(this.x, this.y, this.z).divide(this.length);
+  normalize = function (bounds: number = 1): Vec3 {
+    return new Vec3(this).multiply(1 / this.length());
   };
+
+  power = function (v: number | Vec3): Vec3 {
+    if (typeof v === "number") {
+      this.x **= v;
+      this.y **= v;
+      this.z **= v;
+    } else {
+      this.x **= v.x;
+      this.y **= v.y;
+      this.z **= v.z;
+    }
+    return this;
+  }
 
   crossProduct = function(v: Vec3) {
     return new Vec3(
